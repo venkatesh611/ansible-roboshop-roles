@@ -1,0 +1,204 @@
+# =========================================================
+# RABBITMQ & ERLANG REPOSITORY CONFIGURATION
+# =========================================================
+# File Name:
+# rabbitmq.repo
+#
+# Location after copying:
+# /etc/yum.repos.d/rabbitmq.repo
+#
+# Purpose:
+# Adds RabbitMQ and Erlang repositories
+# into yum/dnf package manager.
+#
+# Why needed?
+#
+# RabbitMQ depends on Erlang runtime.
+#
+# Default RHEL repositories may not contain:
+#   - latest RabbitMQ versions
+#   - required Erlang versions
+#
+# So custom repositories are added.
+#
+# =========================================================
+
+
+
+# =========================================================
+# ERLANG REPOSITORY (64-bit packages)
+# =========================================================
+# Erlang is programming language/runtime
+# required for RabbitMQ.
+#
+# RabbitMQ internally built using Erlang.
+# =========================================================
+[modern-erlang]
+
+
+# Human-readable repository name
+name=modern-erlang-el9
+
+
+# ---------------------------------------------------------
+# Repository URLs
+# ---------------------------------------------------------
+# baseurl tells yum/dnf where packages exist.
+#
+# Multiple URLs provided for:
+#   - redundancy
+#   - high availability
+#   - failover
+#
+# $basearch dynamically resolves system architecture.
+#
+# Example:
+# x86_64
+# ---------------------------------------------------------
+baseurl=https://yum1.novemberain.com/erlang/el/9/$basearch
+        https://yum2.novemberain.com/erlang/el/9/$basearch
+        https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/rpm/el/9/$basearch
+
+
+# Repository enabled
+#
+# 1 -> enabled
+# 0 -> disabled
+enabled=1
+
+
+# Disable GPG signature verification
+#
+# In production:
+# gpgcheck=1 recommended for security.
+gpgcheck=0
+
+
+
+# =========================================================
+# ERLANG NOARCH REPOSITORY
+# =========================================================
+# noarch means:
+# architecture-independent packages.
+#
+# Example:
+# documentation
+# scripts
+# common configs
+# =========================================================
+[modern-erlang-noarch]
+
+
+# Repository description
+name=modern-erlang-el9-noarch
+
+
+# noarch package repository URLs
+baseurl=https://yum1.novemberain.com/erlang/el/9/noarch
+        https://yum2.novemberain.com/erlang/el/9/noarch
+        https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/rpm/el/9/noarch
+
+
+# Repository enabled
+enabled=1
+
+
+# Disable GPG verification
+gpgcheck=0
+
+
+
+# =========================================================
+# ERLANG SOURCE PACKAGE REPOSITORY
+# =========================================================
+# Contains source RPM packages (SRPMS).
+#
+# Used mainly for:
+#   - developers
+#   - debugging
+#   - rebuilding packages
+#
+# Not commonly required in production runtime.
+# =========================================================
+[modern-erlang-source]
+
+
+# Repository description
+name=modern-erlang-el9-source
+
+
+# Source package repository URLs
+baseurl=https://yum1.novemberain.com/erlang/el/9/SRPMS
+        https://yum2.novemberain.com/erlang/el/9/SRPMS
+        https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/rpm/el/9/SRPMS
+
+
+# Repository enabled
+enabled=1
+
+
+# Disable GPG verification
+gpgcheck=0
+
+
+
+# =========================================================
+# RABBITMQ REPOSITORY (64-bit packages)
+# =========================================================
+# RabbitMQ is message broker software.
+#
+# Used in RoboShop for:
+#   - asynchronous communication
+#   - message queues
+#   - event-driven architecture
+#
+# Payment service communicates through RabbitMQ.
+# =========================================================
+[rabbitmq-el9]
+
+
+# Repository description
+name=rabbitmq-el9
+
+
+# RabbitMQ package repository URLs
+#
+# Multiple mirrors for failover/high availability.
+baseurl=https://yum2.novemberain.com/rabbitmq/el/9/$basearch
+        https://yum1.novemberain.com/rabbitmq/el/9/$basearch
+        https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/rpm/el/9/$basearch
+
+
+# Repository enabled
+enabled=1
+
+
+# Disable GPG verification
+gpgcheck=0
+
+
+
+# =========================================================
+# RABBITMQ NOARCH REPOSITORY
+# =========================================================
+# Contains architecture-independent packages.
+# =========================================================
+[rabbitmq-el9-noarch]
+
+
+# Repository description
+name=rabbitmq-el9-noarch
+
+
+# noarch repository URLs
+baseurl=https://yum2.novemberain.com/rabbitmq/el/9/noarch
+        https://yum1.novemberain.com/rabbitmq/el/9/noarch
+        https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/rpm/el/9/noarch
+
+
+# Repository enabled
+enabled=1
+
+
+# Disable GPG verification
+gpgcheck=0

@@ -1,0 +1,360 @@
+# =========================================================
+# PLAYBOOK: CREATE EC2 INSTANCES AND ROUTE53 RECORDS
+# =========================================================
+# Purpose:
+# This playbook automates AWS infrastructure creation.
+#
+# It performs:
+#   1. EC2 instance creation
+#   2. Route53 DNS record creation
+#
+# Services created:
+#   - mongodb
+#   - redis
+#   - mysql
+#   - rabbitmq
+#   - user
+#   - catalogue
+#   - cart
+#   - shipping
+#   - payment
+#   - frontend
+#
+# This is Infrastructure Automation using Ansible.
+#
+# Modules used:
+#   - amazon.aws.ec2_instance
+#   - amazon.aws.route53
+#
+# =========================================================
+
+- name: create ec2 and r53
+
+  # local means execute on ansible control machine itself
+  #
+  # Why?
+  # AWS APIs are called from control node,
+  # not from remote EC2 servers.
+  hosts: local
+
+
+  # connection: local
+  # avoids SSH connection attempts.
+  #
+  # Tasks execute directly in local machine.
+  connection: local
+
+
+  vars:
+
+    # -----------------------------------------------------
+    # AMI ID
+    # -----------------------------------------------------
+    # Amazon Machine Image
+    #
+    # Defines OS image used for EC2 creation.
+    #
+    # Example:
+    # RHEL9
+    # Ubuntu
+    # Amazon Linux
+    # -----------------------------------------------------
+    ami_id: ami-0220d79f3f480ecf5
+
+
+    # -----------------------------------------------------
+    # Security Group ID
+    # -----------------------------------------------------
+    # Security Group acts as virtual firewall.
+    #
+    # Controls:
+    #   inbound traffic
+    #   outbound traffic
+    #
+    # Example:
+    # allow SSH
+    # allow HTTP
+    # allow application ports
+    # -----------------------------------------------------
+    sg_id: sg-05128620531a028ae
+
+
+    # -----------------------------------------------------
+    # Route53 Hosted Zone ID
+    # -----------------------------------------------------
+    # Unique identifier for DNS hosted zone.
+    #
+    # Used internally by AWS Route53.
+    # -----------------------------------------------------
+    zone_id: "Z042165215OGXF50J2MYU"
+
+
+    # -----------------------------------------------------
+    # Domain Name
+    # -----------------------------------------------------
+    # Base domain used for DNS records.
+    #
+    # Example records created:
+    # mongodb.venkatapp.fun
+    # user.venkatapp.fun
+    # frontend.venkatapp.fun
+    # -----------------------------------------------------
+    domain_name: "venkatapp.fun"
+
+
+    # -----------------------------------------------------
+    # List of microservice instances
+    # -----------------------------------------------------
+    # loop will iterate through this list.
+    #
+    # Each item creates:
+    #   - EC2 instance
+    #   - DNS record
+    # -----------------------------------------------------
+    instances:
+    - mongodb
+    - redis
+    - mysql
+    - rabbitmq
+    - user
+    - catalogue
+    - cart
+    - shipping
+    - payment
+    - frontend
+
+
+  tasks:
+
+  # ======================================================
+  # CREATE EC2 INSTANCES
+  # ======================================================
+  #
+  # ec2_instance module creates EC2 virtual machines.
+  #
+  # loop:
+  # executes task multiple times.
+  #
+  # item variable contains current loop value.
+  #
+  # Example:
+  # item = mongodb
+  # item = redis
+  # item = user
+  # ======================================================
+  - name: create ec2 instance
+
+    amazon.aws.ec2_instance:
+
+      # EC2 instance name
+      #
+      # Jinja2 syntax:
+      # {{ variable }}
+      #
+      # item changes dynamically in loop.
+      #
+      # Example:
+      # Name = mongodb
+      # Name = user
+      name: "{{ item }}"
+
+
+      # EC2 machine size
+      #
+      # t3.micro eligible for free tier.
+      #
+      # Defines:
+      #   CPU
+      #   RAM
+      #   network performance
+      instance_type: t3.micro
+
+
+      # Attach security group
+      security_group: "{{ sg_id }}"
+
+
+      # AMI used to launch server
+      image_id: "{{ ami_id }}"
+
+
+      # AWS tags
+      #
+      # Useful for:
+      #   billing
+      #   identification
+      #   filtering
+      tags:
+        Name: "{{ item }}"
+
+
+    # Loop through all instance names
+    loop: "{{ instances }}"
+
+
+    # register stores module output into variable.
+    #
+    # ec2_output contains:
+    #   instance IDs
+    #   private IPs
+    #   public IPs
+    #   metadata
+    register: ec2_output
+
+
+  # ======================================================
+  # CREATE ROUTE53 PRIVATE DNS RECORDS
+  # ======================================================
+  #
+  # Creates DNS entries for all services.
+  #
+  # Example:
+  # mongodb.venkatapp.fun
+  # user.venkatapp.fun
+  #
+  # Uses PRIVATE IP because:
+  # services communicate internally.
+  # ======================================================
+  - name: create route53 record
+
+    amazon.aws.route53:
+
+      # Ensure DNS record exists
+      state: present
+
+
+      # Hosted zone name
+      zone: "{{ domain_name }}"
+
+
+      # DNS record name
+      #
+      # Example:
+      # mongodb.venkatapp.fun
+      #
+      # item.item
+      # first item  -> loop result object
+      # second item -> actual instance name
+      record: "{{ item.item }}.{{ domain_name }}"
+
+
+      # DNS record type
+      #
+      # A record = maps hostname -> IPv4 address
+      type: A
+
+
+      # TTL = Time To Live
+      #
+      # DNS cache duration in seconds.
+      ttl: 1
+
+
+      # Private IP address of EC2 instance
+      #
+      # instances[0]
+      # because module returns instance list.
+      value: "{{ item.instances[0].private_ip_address }}"
+
+
+      # overwrite existing record if already exists
+      overwrite: true
+
+
+    # Loop through ec2 creation output
+    loop: "{{ ec2_output.results }}"
+
+
+  # ======================================================
+  # CREATE PUBLIC DNS RECORD FOR FRONTEND
+  # ======================================================
+  #
+  # Frontend should be accessible from internet.
+  #
+  # Therefore:
+  # public IP is used.
+  #
+  # This creates:
+  # venkatapp.fun -> frontend public IP
+  #
+  # Instead of:
+  # frontend.venkatapp.fun
+  # ======================================================
+  - name: create route53 record for frontend
+
+    amazon.aws.route53:
+
+      state: present
+
+      zone: "{{ domain_name }}"
+
+
+      # Main/root domain
+      #
+      # Example:
+      # venkatapp.fun
+      record: "{{ domain_name }}"
+
+
+      type: A
+
+      ttl: 1
+
+
+      # Frontend uses PUBLIC IP
+      #
+      # So users from internet can access website.
+      value: "{{ item.instances[0].public_ip_address }}"
+
+
+      overwrite: true
+
+
+    # Run ONLY when instance name is frontend
+    when: item.item == "frontend"
+
+    loop: "{{ ec2_output.results }}"
+
+
+  # ======================================================
+  # CREATE INTERNAL FRONTEND DNS RECORD
+  # ======================================================
+  #
+  # This additionally creates:
+  # frontend.venkatapp.fun
+  #
+  # using PRIVATE IP.
+  #
+  # Useful for:
+  # internal communication/testing.
+  # ======================================================
+  - name: create route53 record for frontend
+
+    amazon.aws.route53:
+
+      state: present
+
+      zone: "{{ domain_name }}"
+
+
+      # Example:
+      # frontend.venkatapp.fun
+      record: "{{ item.item }}.{{ domain_name }}"
+
+
+      type: A
+
+      ttl: 1
+
+
+      # Frontend private IP
+      value: "{{ item.instances[0].private_ip_address }}"
+
+
+      overwrite: true
+
+
+    # Execute only for frontend server
+    when: item.item == "frontend"
+
+    loop: "{{ ec2_output.results }}"

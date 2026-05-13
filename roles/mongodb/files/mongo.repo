@@ -1,0 +1,79 @@
+# =========================================================
+# MONGODB YUM REPOSITORY FILE
+# =========================================================
+# File Name:
+# mongo.repo
+#
+# Location after copying:
+# /etc/yum.repos.d/mongo.repo
+#
+# Purpose:
+# Adds official MongoDB repository to server.
+#
+# Why needed?
+# Default RHEL repositories may not contain:
+#   - latest MongoDB versions
+#   - mongodb-org package
+#
+# Repository files tell yum/dnf:
+#   - where packages are located
+#   - package metadata source
+# =========================================================
+
+
+# Repository ID / repository section name
+#
+# Can be any unique name.
+[mongodb-org-7.0]
+
+
+# Human-readable repository description
+name=MongoDB Repository
+
+
+# ---------------------------------------------------------
+# Repository URL
+# ---------------------------------------------------------
+# baseurl tells yum/dnf where packages exist.
+#
+# Breakdown:
+#
+# repo.mongodb.org
+#   -> official MongoDB repository server
+#
+# redhat/9
+#   -> RHEL version 9 packages
+#
+# mongodb-org/7.0
+#   -> MongoDB version 7 repository
+#
+# x86_64
+#   -> 64-bit architecture packages
+# ---------------------------------------------------------
+baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/7.0/x86_64/
+
+
+# ---------------------------------------------------------
+# enabled=1
+# ---------------------------------------------------------
+# 1 -> repository enabled
+# 0 -> repository disabled
+#
+# If disabled,
+# yum/dnf ignores this repository.
+# ---------------------------------------------------------
+enabled=1
+
+
+# ---------------------------------------------------------
+# gpgcheck=0
+# ---------------------------------------------------------
+# GPG check validates package signatures.
+#
+# 0 -> disable signature verification
+# 1 -> enable verification
+#
+# In production:
+# usually gpgcheck=1 recommended for security.
+# ---------------------------------------------------------
+gpgcheck=0

@@ -30,7 +30,7 @@
       path: /etc/redis/redis.conf
       regexp: 'protected-mode'
       line: 'protected-mode no'
-    notity: restart redis
+    notify: restart redis
 
 
 

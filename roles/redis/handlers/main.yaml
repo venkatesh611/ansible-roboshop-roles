@@ -1,0 +1,5 @@
+handlers:
+ - name: restart redis
+   ansible.biultin.service:
+     name: redis
+     state: restarted

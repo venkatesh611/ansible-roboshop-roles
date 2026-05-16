@@ -1,5 +1,5 @@
 handlers:
  - name: restart mongod
    ansible.builtin.service:
-     name: mongod
-     state: restarted
+    name: mongod
+    state: restarted

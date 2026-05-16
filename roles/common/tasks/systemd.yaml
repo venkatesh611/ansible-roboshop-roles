@@ -2,7 +2,7 @@
   ansible.builtin.template:
     src: "{{ component }}.service.j2"
     dest: "/etc/systemd/system/{{ component }}.service"
-  notity: deamon reload
+  notify: deamon reload
 
 
 - name: start and enable {{ component }}

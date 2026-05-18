@@ -1,0 +1,9 @@
+MONGODB_HOST: mongodb.venkatapp.fun
+REDIS_HOST: redis.venkatapp.fun
+CATALOGUE_HOST: catalogue.venkatapp.fun
+CART_HOST: cart.venkatapp.fun
+USER_HOST: user.venkatapp.fun
+RABBITMQ_HOST: rabbitmq.venkatapp.fun
+MYSQL_HOST: mysql.venkatapp.fun
+SHIPPING_HOST: shipping.venkatapp.fun
+PAYMENT_HOST: payment.venkatapp.fun

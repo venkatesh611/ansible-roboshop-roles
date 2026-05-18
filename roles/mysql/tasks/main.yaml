@@ -20,8 +20,17 @@
    - name: set mysql root password
      community.mysql.mysql_user:
       name: root
-      host: localhost
+      host: '%'
       password: RoboShop@1
       login_unix_socket: /var/lib/mysql/mysql.sock
       check_implicit_admin: true
+      priv: "*.*:ALL,GRANT"
       state: present
+  #  - name: set mysql root password
+  #    community.mysql.mysql_user:
+  #     name: root
+  #     host: localhost
+  #     password: RoboShop@1
+  #     login_unix_socket: /var/lib/mysql/mysql.sock
+  #     check_implicit_admin: true
+  #     state: present

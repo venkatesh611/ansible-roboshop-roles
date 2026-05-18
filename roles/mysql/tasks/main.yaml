@@ -19,11 +19,11 @@
       executable: pip3.9
    - name: set mysql root password
      community.mysql.mysql_user:
+      login_user: root
+      login_password: RoboShop@1
       name: root
       host: '%'
       password: RoboShop@1
-      login_unix_socket: /var/lib/mysql/mysql.sock
-      check_implicit_admin: true
       priv: "*.*:ALL,GRANT"
       state: present
   #  - name: set mysql root password
